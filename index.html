@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Hello React!</title>
+    <script src="https://cdn.bootcss.com/react/15.4.2/react.min.js"></script>
+    <script src="https://cdn.bootcss.com/react/15.4.2/react-dom.min.js"></script>
+    <script src="https://cdn.bootcss.com/babel-standalone/6.22.1/babel.min.js"></script>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/style.css">
+  </head>
+  <body>
+    <div class="container">
+      <div id="todoBox" class="col-md-6 col-md-offset-3"></div>
+    </div>
+
+    <script type="text/babel">
+
+class TodoBox extends React.Component{
+  constructor(props){
+    super(props);
+    this.Delete=this.Delete.bind(this);
+    this.Complete=this.Complete.bind(this);
+    this.generateId=this.generateId.bind(this);
+    this.Submit=this.Submit.bind(this);
+    this.state={
+      data:[
+    {"id": "0001", "task":"吃饭", "complete": "false"},
+    {"id": "0002", "task":"睡觉", "complete": "false"},
+    {"id": "0003", "task":"学习", "complete": "true"},
+  ]
+  };
+}
+
+//根据传入的ID删除一项任务
+Delete(taskId){
+  let data=this.state.data;
+  data=data.filter(task=>task.id!==taskId);
+  this.setState({data});
+}
+
+//根据传入的ID切换一项任务的完成状态
+Complete(overId){
+  let data=this.state.data;
+  for(var i in data){
+    if(data[i].id===overId){
+      data[i].complete=data[i].complete==="true"?"false":"true";
+      break;
+    }
+  }
+  this.setState({data});
+}
+
+//也可以使用data.length来进行for循环 let i=0;i<data.length;i++
+
+//给新增的任务一个随机的id,避免重复，也可以不用赋值，在concat时让id等于当前length+1
+
+generateId(){
+return Math.floor(Math.random()*9999)+1000;
+}
+
+//新增一项任务
+Submit(task){
+let data=this.state.data;
+let id=this.generateId();
+data = data.concat([{"id": id, "task": task, "complete": "false"}]);
+this.setState({data});
+}
+
+render(){
+let statistics={
+//统计任务总数及完成的数量
+todoCount: this.state.data.length || 0,
+todoCompleteCount: this.state.data.filter(item=> item.complete==="true").length
+};
+return(
+  <div className="well">
+    <h1 className="text-center">Todolist-clr</h1>
+    <TodoList data={this.state.data}
+      deleteTask={this.Delete}
+      toggleComplete={this.Complete}
+      todoCount={statistics.todoCount}
+      todoCompleteCount={statistics.todoCompleteCount} />
+    <TodoForm submitTask={this.Submit} />
+  </div>
+)
+}
+}
+
+
+class TodoList extends React.Component{
+
+  render(){
+    let taskList=this.props.data.map(listItem=>{
+      return (
+        <TodoItem 
+        taskId={listItem.id}
+        key={listItem.id}
+        task={listItem.task}
+        complete={listItem.complete}
+        deleteTask={this.props.deleteTask}
+        toggleComplete={this.props.toggleComplete}
+        />
+      )
+    });
+    return (
+    <ul className="list-group">
+      {taskList}
+      <TodoFooter todoCount={this.props.todoCount} todoCompleteCount={this.props.todoCompleteCount} />
+      </ul>
+  );
+}
+}
+
+class TodoItem extends React.Component{
+  constructor(props){
+    super(props);
+    this.toggleComplete=this.toggleComplete.bind(this);
+    this.deleteTask=this. deleteTask.bind(this);
+    this.handleMouseOver=this.handleMouseOver.bind(this);
+    this.handleMouseOut=this.handleMouseOut.bind(this);
+
+  }
+  //调用父组件的函数，传入父组件的ID进行状态更改
+  toggleComplete() {
+    this.props.toggleComplete(this.props.taskId);
+  }
+
+  deleteTask() {
+    this.props.deleteTask(this.props.taskId);
+  }
+
+  // 鼠标移入显示删除按钮
+  handleMouseOver () {
+    ReactDOM.findDOMNode(this.refs.deleteBtn).style.display = "inline";
+  }
+//鼠标移开按钮消失
+  handleMouseOut () {
+    ReactDOM.findDOMNode(this.refs.deleteBtn).style.display = "none";
+  }
+
+  render () {
+    let task = this.props.task;
+    let classes = "list-group-item"
+    let itemChecked;
+    if (this.props.complete === "true") {
+      task = <s>{task}</s>
+      itemChecked = true;
+      classes += " list-group-item-success"
+    } else {
+      itemChecked = false;
+    }
+
+    return (
+      <li className={classes}
+        onMouseOver={this.handleMouseOver}
+        onMouseOut={this.handleMouseOut}>
+        <input type="checkbox" checked={itemChecked} onChange={this.toggleComplete} className="pull-left" />
+        {task}
+        <div className="pull-right">
+          <button type="button" className="btn btn-xs close" onClick={this.deleteTask} ref="deleteBtn">删除</button>
+        </div>
+      </li>
+    );
+  }
+}
+
+class TodoFooter extends React.Component{
+
+  render(){
+   return (
+       <li className="list-group-item">{this.props.todoCompleteCount}已完成 / {this.props.todoCount}总数</li>
+     )
+  }
+ }
+
+ class TodoForm extends React.Component {
+  constructor(props) {
+    super(props);
+    this.submitTask=this.submitTask.bind(this);
+  }
+
+  submitTask(event){
+    event.preventDefault(); //阻止浏览器的默认刷新行为，否则会使状态恢复到默认
+    let task=ReactDOM.findDOMNode(this.refs.task).value;
+    if(!task){
+      return;
+    }
+    this.props.submitTask(task);
+    ReactDOM.findDOMNode(this.refs.task).value = "";
+  }
+
+  render(){
+    return (
+    <div>
+      <hr />
+      <form className="form-horizontal" onSubmit={this.submitTask}>
+        <div className="form-group">
+          <label for="task" className="col-md-2 control-label">Task</label>
+          <div className="col-md-10">
+            <input type="text" id="task" ref="task" className="form-control" placeholder="输入新任务"></input>
+          </div>
+        </div>
+        <div className="row">
+          <div className="col-md-12 text-right">
+            <input type="submit" value="Save Task" className="btn btn-primary" />
+          </div>
+        </div>
+      </form>
+    </div>
+  )
+
+  }
+}
+
+ReactDOM.render(
+	<TodoBox />,
+	document.getElementById('todoBox')
+);
+    </script>
+  </body>
+</html>
