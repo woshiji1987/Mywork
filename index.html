@@ -138,7 +138,16 @@ class TodoItem extends React.Component{
   handleMouseOut () {
     ReactDOM.findDOMNode(this.refs.deleteBtn).style.display = "none";
   }
+/*也可以这样写，因为React官方已经不推荐用ReactDOM.findDOMNode
 
+  handleMouseOver () {
+    this.refs.deleteBtn.style.display = "inline";
+  }
+
+  handleMouseOut () {
+    this.refs.deleteBtn.style.display = "none";
+  }
+*/
   render () {
     let task = this.props.task;
     let classes = "list-group-item"
@@ -189,6 +198,17 @@ class TodoFooter extends React.Component{
     this.props.submitTask(task);
     ReactDOM.findDOMNode(this.refs.task).value = "";
   }
+  /* 也可以不用ReactDOM.findDOMNode，下面的方法是等价的
+    submitTask(event){
+    event.preventDefault(); //阻止浏览器的默认刷新行为，否则会使状态恢复到默认
+    let task=this.refs.task.value;
+    if(!task){
+     return;
+    }
+    this.props.submitTask(task);
+    this.refs.task.value='';
+  }
+  */
 
   render(){
     return (
