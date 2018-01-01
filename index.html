@@ -208,6 +208,17 @@ class TodoFooter extends React.Component{
     this.props.submitTask(task);
     this.refs.task.value='';
   }
+  
+  ES6中  input中ref={input=>{this.task=input}} 
+      submitTask(event){
+    event.preventDefault();
+    let task=this.task.value;
+    if(!task){
+     return;
+    }
+    this.props.submitTask(task);
+    this.task.value='';
+  }
   */
 
   render(){
